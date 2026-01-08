@@ -29,14 +29,38 @@ Download or clone this repository. You need the `blender_jps` folder.
 4. Click **Install...** and select the ZIP file
 5. Enable the addon by checking the box next to "BlenderJPS - JuPedSim Importer"
 
-#### Option B: Manual Installation
-1. Copy the `blender_jps` folder to your Blender addons directory:
-   - **Windows**: `%APPDATA%\Blender Foundation\Blender\<version>\scripts\addons\`
-   - **macOS**: `~/Library/Application Support/Blender/<version>/scripts/addons/`
-   - **Linux**: `~/.config/blender/<version>/scripts/addons/`
-2. Open Blender
-3. Go to **Edit → Preferences → Add-ons**
-4. Search for "JuPedSim" and enable the addon
+#### Option B: Manual Installation (Symbolic Link)
+Create a symbolic link to your `blender_jps` folder in your Blender addons directory. This allows for easier development as changes are reflected immediately.
+
+**Windows:**
+1. Open Command Prompt or PowerShell as Administrator
+2. Navigate to your Blender addons directory:
+   ```cmd
+   cd "%APPDATA%\Blender Foundation\Blender\<version>\scripts\addons"
+   ```
+   Replace `<version>` with your Blender version (e.g., `4.2`)
+3. Create a symbolic link:
+   ```cmd
+   mklink /D blender_jps "C:\path\to\BlenderJPS\blender_jps"
+   ```
+   Replace `C:\path\to\BlenderJPS\blender_jps` with the actual path to your `blender_jps` folder
+
+**macOS/Linux:**
+1. Open Terminal
+2. Navigate to your Blender addons directory:
+   ```bash
+   cd ~/Library/Application\ Support/Blender/<version>/scripts/addons  # macOS
+   # or
+   cd ~/.config/blender/<version>/scripts/addons  # Linux
+   ```
+3. Create a symbolic link:
+   ```bash
+   ln -s /path/to/BlenderJPS/blender_jps blender_jps
+   ```
+
+4. Open Blender
+5. Go to **Edit → Preferences → Add-ons**
+6. Search for "JuPedSim" and enable the addon
 
 ### Step 3: Install Dependencies (IMPORTANT)
 
