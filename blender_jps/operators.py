@@ -88,11 +88,15 @@ class JUPEDSIM_OT_load_simulation(Operator):
             # Get frame step setting
             frame_step = context.scene.jupedsim_props.frame_step
             
-            # Create agents with animated trajectories
+            # Create agents with animated trajectories and path curves
             self._create_agents(context, traj_data, agents_collection, frame_step)
             
             # Create geometry curves
             self._create_geometry(context, geometry, geometry_collection)
+            
+            # Set initial path visibility based on property
+            show_paths = context.scene.jupedsim_props.show_paths
+            self._update_path_visibility(agents_collection, show_paths)
             
             self.report({'INFO'}, "Simulation loaded successfully!")
             return {'FINISHED'}
@@ -196,8 +200,11 @@ class JUPEDSIM_OT_load_simulation(Operator):
                 # Reset to visible for viewport (current state)
                 empty_obj.hide_viewport = False
                 empty_obj.hide_render = False
+            
+            # Create path curve for this agent
+            self._create_agent_path(context, agent_id, agent_data, collection)
         
-        self.report({'INFO'}, f"Created {len(agent_ids)} agents with animations")
+        self.report({'INFO'}, f"Created {len(agent_ids)} agents with animations and path curves")
     
     def _create_geometry(self, context, geometry, collection):
         """Create curves from the walkable area geometry."""
@@ -256,6 +263,57 @@ class JUPEDSIM_OT_load_simulation(Operator):
         curve_data.bevel_resolution = 2
         
         return curve_obj
+    
+    def _create_agent_path(self, context, agent_id, agent_data, collection):
+        """Create a curve representing the path of an agent."""
+        # Get all coordinates for this agent's path
+        coords = []
+        for _, row in agent_data.iterrows():
+            x = float(row['x'])
+            y = float(row['y'])
+            z = 0.0  # below the agent, at the height of the ground
+            coords.append((x, y, z))
+        
+        if len(coords) < 2:
+            return  # Need at least 2 points for a curve
+        
+        # Create curve data
+        curve_data = bpy.data.curves.new(name=f"Path_Agent_{agent_id}", type='CURVE')
+        curve_data.dimensions = '3D'
+        curve_data.resolution_u = 2
+        
+        # Create spline
+        spline = curve_data.splines.new('POLY')
+        spline.points.add(len(coords) - 1)  # One point already exists
+        
+        # Set point coordinates (x, y, z, w)
+        for i, coord in enumerate(coords):
+            spline.points[i].co = (*coord, 1.0)
+        
+        # Path is not closed
+        spline.use_cyclic_u = False
+        
+        # Create curve object
+        curve_obj = bpy.data.objects.new(f"Path_Agent_{agent_id}", curve_data)
+        
+        # Add to collection
+        collection.objects.link(curve_obj)
+        
+        # Add visual thickness to the path curve (thinner than geometry)
+        curve_data.bevel_depth = 0.02
+        curve_data.bevel_resolution = 2
+        
+        # Set material color (optional - can be customized)
+        # For now, just make it visible but will be controlled by toggle
+        
+        return curve_obj
+    
+    def _update_path_visibility(self, collection, visible):
+        """Update visibility of all agent path curves in the collection."""
+        for obj in collection.objects:
+            if obj.name.startswith("Path_Agent_"):
+                obj.hide_viewport = not visible
+                obj.hide_render = not visible
 
 
 classes = [
