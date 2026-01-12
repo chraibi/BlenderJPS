@@ -8,6 +8,8 @@ A Blender addon for importing JuPedSim simulation SQLite files, visualizing agen
 
 - **Import JuPedSim SQLite files**: Load trajectory data and walkable area geometry
 - **Animated Agents**: Each agent is represented as an animated sphere following their trajectory
+- **Agent Path Visualization**: Each agent's complete path is automatically created as a curve object
+- **Path Visibility Toggle**: Show/hide all agent path curves with a single checkbox
 - **Geometry Visualization**: Walkable area boundaries and obstacles are displayed as curves
 - **Easy Installation**: Built-in dependency installer for required Python packages
 
@@ -49,8 +51,18 @@ The **JuPedSim** panel will appear in the right sidebar of the 3D Viewport (pres
 
 - **JuPedSim_Agents** collection: Contains animated empty objects (sphere display) for each agent
   - Agents automatically hide after reaching their destination
+  - Path curves for each agent showing their complete trajectory (hidden by default)
 - **JuPedSim_Geometry** collection: Contains curve objects for boundaries and obstacles
 - Animation timeline is automatically set to match the simulation frames
+
+### Display Options
+
+After loading a simulation, a **Display Options** section appears in the panel:
+
+- **Show Agent Paths**: Toggle checkbox to show/hide all agent path curves
+  - Path curves are created automatically for each agent when loading
+  - Paths are hidden by default but can be toggled on/off at any time
+  - Each path is a 3D curve object showing the agent's complete trajectory
 
 ## Simulation Data Structure
 
