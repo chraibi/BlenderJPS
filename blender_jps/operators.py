@@ -12,6 +12,7 @@ import threading
 import time
 import traceback
 import sqlite3
+import bmesh
 from array import array
 
 
@@ -566,18 +567,28 @@ class JUPEDSIM_OT_load_simulation(Operator):
         return collection
     
     def _create_agent(self, context, agent_id, collection):
-        """Create an empty object for a single agent (streamed positions)."""
-        # Create an empty object for the agent (much faster than mesh)
-        empty_obj = bpy.data.objects.new(f"Agent_{agent_id}", None)
-        empty_obj.empty_display_type = 'SPHERE'
-        empty_obj.empty_display_size = 0.5  # Radius 0.5 = diameter 1
-        
+        """Create an icosphere object for a single agent (streamed positions)."""
+        mesh = bpy.data.meshes.new(f"Agent_{agent_id}_Mesh")
+        bm = bmesh.new()
+        bmesh.ops.create_icosphere(bm, subdivisions=2, radius=0.5)
+        bm.to_mesh(mesh)
+        bm.free()
+        mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
+        mesh.update()
+
+        agent_obj = bpy.data.objects.new(f"Agent_{agent_id}", mesh)
+        agent_obj.scale = (
+            context.scene.jupedsim_props.agent_scale,
+            context.scene.jupedsim_props.agent_scale,
+            context.scene.jupedsim_props.agent_scale,
+        )
+
         # Add to collection
-        collection.objects.link(empty_obj)
-        
+        collection.objects.link(agent_obj)
+
         # Initial state; positions are streamed per frame.
-        empty_obj.hide_viewport = True
-        empty_obj.hide_render = True
+        agent_obj.hide_viewport = True
+        agent_obj.hide_render = True
     
     def _create_geometry(self, context, geometry, collection):
         """Create curves from the walkable area geometry."""

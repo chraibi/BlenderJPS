@@ -80,21 +80,24 @@ class JUPEDSIM_PT_main_panel(Panel):
         
         layout.separator()
         
-        # Display options (only show if paths were loaded)
+        # Display options (always visible)
+        box = layout.box()
+        box.label(text="Display Options", icon='HIDE_OFF')
+        row = box.row()
+        row.prop(props, "agent_scale", text="Agent Scale (m)")
+        row = box.row()
+        row.prop(props, "show_paths", text="Show Agent Paths")
+        has_paths = False
         if "JuPedSim_Agents" in bpy.data.collections:
             agents_collection = bpy.data.collections["JuPedSim_Agents"]
-            # Check for path objects in the collection
-            path_objects = [obj for obj in agents_collection.objects if obj.name.startswith("Path_Agent_")]
-            # Also check for agent objects to determine if simulation was loaded
-            agent_objects = [obj for obj in agents_collection.objects if obj.name.startswith("Agent_")]
-            
-            # Show checkbox only when paths exist and load_full_paths was enabled
-            if props.load_full_paths and agent_objects and path_objects:
-                box = layout.box()
-                box.label(text="Display Options", icon='HIDE_OFF')
-                row = box.row()
-                row.prop(props, "show_paths", text="Show Agent Paths")
+            path_objects = [
+                obj for obj in agents_collection.objects
+                if obj.name.startswith("Path_Agent_")
+            ]
+            has_paths = bool(path_objects)
+            if has_paths:
                 box.label(text=f"({len(path_objects)} path curves)", icon='CURVE_DATA')
+        row.enabled = props.load_full_paths and has_paths
         
         # Info section
         layout.separator()
