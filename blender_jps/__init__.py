@@ -51,6 +51,8 @@ def update_agent_scale(self, context):
     for obj in collection.objects:
         if obj.name.startswith("Agent_") and obj.type == 'MESH':
             obj.scale = (self.agent_scale, self.agent_scale, self.agent_scale)
+        if obj.name == "JuPedSim_ParticleInstance" and obj.type == 'MESH':
+            obj.scale = (self.agent_scale, self.agent_scale, self.agent_scale)
 
 
 class JuPedSimProperties(PropertyGroup):

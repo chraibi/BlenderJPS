@@ -718,6 +718,44 @@ class JUPEDSIM_OT_load_simulation(Operator):
         obj.display_type = 'WIRE'
         obj.show_in_front = True
         self._agents_collection.objects.link(obj)
+
+        instance_mesh = bpy.data.meshes.new("JuPedSim_ParticleInstanceMesh")
+        bm = bmesh.new()
+        bmesh.ops.create_icosphere(bm, subdivisions=1, radius=0.5)
+        bm.to_mesh(instance_mesh)
+        bm.free()
+        instance_mesh.polygons.foreach_set(
+            "use_smooth", [True] * len(instance_mesh.polygons)
+        )
+        instance_mesh.update()
+
+        instance_obj = bpy.data.objects.new(
+            "JuPedSim_ParticleInstance", instance_mesh
+        )
+        instance_obj.scale = (
+            context.scene.jupedsim_props.agent_scale,
+            context.scene.jupedsim_props.agent_scale,
+            context.scene.jupedsim_props.agent_scale,
+        )
+        instance_obj.hide_viewport = False
+        instance_obj.hide_render = False
+        instance_obj.display_type = 'WIRE'
+        self._agents_collection.objects.link(instance_obj)
+
+        ps_settings = bpy.data.particles.new("JuPedSim_Particles_Settings")
+        ps_settings.type = 'HAIR'
+        ps_settings.count = len(agent_ids)
+        ps_settings.emit_from = 'VERT'
+        ps_settings.use_emit_random = False
+        ps_settings.render_type = 'OBJECT'
+        ps_settings.instance_object = instance_obj
+        ps_settings.particle_size = 0.25 # magic number, ensures particles are same size as reference sphere
+        ps_settings.display_method = 'RENDER'
+        ps_settings.display_percentage = 100
+
+        ps_mod = obj.modifiers.new("JuPedSimParticles", type='PARTICLE_SYSTEM')
+        ps_mod.particle_system.settings = ps_settings
+
         self._start_streaming("big", object_name=obj.name)
     
     def _update_path_visibility(self, collection, visible):
