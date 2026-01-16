@@ -2,7 +2,7 @@
 
 A Blender addon for importing JuPedSim simulation SQLite files, visualizing agent trajectories and simulation geometry.
 
-![Addon Preview](images/preview.png)
+![Addon Preview](images/preview_v2.jpg)
 
 ## Features
 
@@ -11,6 +11,8 @@ A Blender addon for importing JuPedSim simulation SQLite files, visualizing agen
 - **Agent Path Visualization**: Each agent's complete path is automatically created as a curve object
 - **Path Visibility Toggle**: Show/hide all agent path curves with a single checkbox
 - **Geometry Visualization**: Walkable area boundaries and obstacles are displayed as curves
+- **Big Data Mode**: Stream agents as particles for very large datasets
+- **Display Controls**: Adjust agent scale, geometry thickness, and frame rate
 - **Easy Installation**: Built-in dependency installer for required Python packages
 
 ## Requirements
@@ -45,13 +47,16 @@ The **JuPedSim** panel will appear in the right sidebar of the 3D Viewport (pres
    - `1` = Load all frames (default)
    - `2` = Load every 2nd frame (50% of keyframes)
    - `10` = Load every 10th frame (10% of keyframes) etc.
-6. Click **Load Simulation**
+6. (Optional) Enable **Big Data Mode** to handle very large datasets (agents load as particles)
+7. (Optional) Enable **Load Full Paths** if you want per-agent path curves
+8. Click **Load Simulation**
 
 ### What Gets Created
 
 - **JuPedSim_Agents** collection: Contains animated empty objects (sphere display) for each agent
   - Agents automatically hide after reaching their destination
   - Path curves for each agent showing their complete trajectory (hidden by default)
+- **Big Data Mode**: Creates a single particle system driven by streamed frame updates
 - **JuPedSim_Geometry** collection: Contains curve objects for boundaries and obstacles
 - Animation timeline is automatically set to match the simulation frames
 
@@ -59,8 +64,11 @@ The **JuPedSim** panel will appear in the right sidebar of the 3D Viewport (pres
 
 After loading a simulation, a **Display Options** section appears in the panel:
 
+- **Agent Scale (m)**: Adjust size of agent spheres/instances
+- **Geometry Thickness (m)**: Adjust thickness of walkable area curves
+- **Frame Rate**: Quick access to Blender frame rate presets
 - **Show Agent Paths**: Toggle checkbox to show/hide all agent path curves
-  - Path curves are created automatically for each agent when loading
+  - Requires **Load Full Paths** on import
   - Paths are hidden by default but can be toggled on/off at any time
   - Each path is a 3D curve object showing the agent's complete trajectory
 
@@ -88,6 +96,8 @@ The addon uses [PedPy](https://github.com/PedestrianDynamics/PedPy) to read JuPe
 
 ### Loading takes too long
 - Use the **Load Every Nth Frame** option to downsample the temporal resolution
+- Enable **Big Data Mode** for very large datasets
+- Disable **Load Full Paths** unless you really need per-agent curves
 - For very large simulations, try values like 5 or 10 to significantly reduce loading time
 - Linear interpolation will fill in the gaps between keyframes for smooth animation
 
