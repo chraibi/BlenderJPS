@@ -20,7 +20,7 @@ A Blender addon for importing JuPedSim simulation SQLite files, visualizing agen
 - **Blender 4.0+** (tested with Blender 4.0 and later)
 - **Python packages**: `pedpy`, `numpy<2.0` (installed automatically via addon)
 
-> **Note:** While `pedpy` is currently only used to open sqlite files, something that pandas can also do natively, we include it for maintainability and to prepare for future features that will leverage its visualization and processing capabilities.
+> **Note:** `pedpy` is kept mainly for legacy compatibility and because we currently rely on its `shapely` dependency for geometry processing. SQLite reading is now handled via a streaming approach inspired by the [JuPedSim visualizer's reader](https://github.com/PedestrianDynamics/jupedsim/tree/master/python_modules/jupedsim_visualizer/jupedsim_visualizer).
 
 ## Installation
 
@@ -74,7 +74,7 @@ After loading a simulation, a **Display Options** section appears in the panel:
 
 ## Simulation Data Structure
 
-The addon uses [PedPy](https://github.com/PedestrianDynamics/PedPy) to read JuPedSim SQLite files containing:
+The addon uses [PedPy](https://github.com/PedestrianDynamics/PedPy) (mainly for `shapely`) and streams the SQLite data similarly to the JuPedSim visualizer to read:
 
 - **Trajectory data**: Agent positions over time (x, y coordinates per frame)
 - **Walkable area**: The geometry defining where agents can move
