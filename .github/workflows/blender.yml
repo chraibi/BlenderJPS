@@ -7,15 +7,22 @@ on:
 jobs:
   addon-smoke-test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        blender_version: 
+          - version: "5.0.1"
+            major_dir: "Blender5.0"
+          - version: "4.2.0"
+            major_dir: "Blender4.2"
+    
     env:
-      BLENDER_VERSION: "5.0.1"
-      BLENDER_MAJOR_DIR: "Blender5.0"
       ADDON_MODULE: "blender_jps"
-
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+      
       - name: Install system dependencies (headless)
         run: |
           set -euxo pipefail
@@ -23,49 +30,88 @@ jobs:
           sudo apt-get install -y \
             ca-certificates curl tar xz-utils \
             libxi6 libxrender1 libxkbcommon0 libsm6 \
-            libgl1 libglib2.0-0
-
-      - name: Download Blender
+            libgl1 libglib2.0-0 libgomp1
+      
+      - name: Download Blender ${{ matrix.blender_version.version }}
         run: |
           set -euxo pipefail
-          TARBALL="blender-${BLENDER_VERSION}-linux-x64.tar.xz"
-          URL="https://download.blender.org/release/${BLENDER_MAJOR_DIR}/${TARBALL}"
-
-          curl -L "$URL" -o "$TARBALL"
+          TARBALL="blender-${{ matrix.blender_version.version }}-linux-x64.tar.xz"
+          URL="https://download.blender.org/release/${{ matrix.blender_version.major_dir }}/${TARBALL}"
+          
+          echo "Downloading from: $URL"
+          curl -fL "$URL" -o "$TARBALL"
           tar -xf "$TARBALL"
-
-          BLENDER_DIR="blender-${BLENDER_VERSION}-linux-x64"
+          
+          BLENDER_DIR="blender-${{ matrix.blender_version.version }}-linux-x64"
           echo "BLENDER_BIN=${GITHUB_WORKSPACE}/${BLENDER_DIR}/blender" >> "$GITHUB_ENV"
-
+          
           "$GITHUB_WORKSPACE/${BLENDER_DIR}/blender" --version
-
-
+      
       - name: Install pedpy into Blender Python
         shell: bash
         run: |
           set -euxo pipefail
-
           cat > /tmp/install_pedpy.py <<'PY'
-          import subprocess, sys
-          print("Blender Python:", sys.executable)
-          subprocess.check_call([sys.executable, "-m", "ensurepip", "--upgrade"])
-          subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
-          subprocess.check_call([sys.executable, "-m", "pip", "install", "pedpy"])
-          print("pedpy installed OK")
+          import subprocess
+          import sys
+          
+          print("=" * 60)
+          print(f"Blender Python: {sys.executable}")
+          print(f"Python version: {sys.version}")
+          print("=" * 60)
+          
+          try:
+              subprocess.check_call([sys.executable, "-m", "ensurepip", "--upgrade"])
+              subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+              subprocess.check_call([sys.executable, "-m", "pip", "install", "pedpy"])
+              print("\n✓ pedpy installed successfully")
+              
+              # Verify installation
+              import pedpy
+              print(f"✓ pedpy version: {pedpy.__version__}")
+          except Exception as e:
+              print(f"\n✗ Failed to install pedpy: {e}")
+              sys.exit(1)
           PY
-
+          
           "$BLENDER_BIN" --background --python /tmp/install_pedpy.py
-
-      - name: Run add-on loading test
+      
+      - name: Run add-on loading test with SQLite
         shell: bash
         run: |
           set -euxo pipefail
-
           "$BLENDER_BIN" \
           --background \
           --factory-startup \
           --python blender_jps/tests/test_plugin_loading.py \
           -- \
           --addon "${ADDON_MODULE}" \
-          --factory-startup
-    
+          --factory-startup \
+          --require-module pedpy \
+          --require-module shapely \
+          --require-operator jupedsim.load_simulation \
+          --require-operator jupedsim.select_file \
+          --test-sqlite-loading   
+          shell: bash
+          run: |
+            set -euxo pipefail
+            
+            "$BLENDER_BIN" \
+            --background \
+            --factory-startup \
+            --python blender_jps/tests/test_plugin_loading.py \
+            -- \
+            --addon "${ADDON_MODULE}" \
+            --factory-startup \
+            --require-module pedpy
+            
+      - name: Upload test artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blender-logs-${{ matrix.blender_version.version }}
+          path: |
+            /tmp/*.log
+            /tmp/*.blend
+          retention-days: 7
+            
