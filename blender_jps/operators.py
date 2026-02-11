@@ -3,18 +3,18 @@ BlenderJPS Operators
 Operators for loading JuPedSim trajectory and geometry data.
 """
 
-import bpy
-from bpy.types import Operator
-from bpy.props import StringProperty
-from bpy_extras.io_utils import ImportHelper
 import pathlib
+import sqlite3
 import threading
 import time
 import traceback
-import sqlite3
-import bmesh
 from array import array
 
+import bmesh
+import bpy
+from bpy.props import StringProperty
+from bpy.types import Operator
+from bpy_extras.io_utils import ImportHelper
 
 STREAM_STATE = {
     "db_path": None,

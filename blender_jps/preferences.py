@@ -9,10 +9,6 @@ import sys
 
 import bpy
 from bpy.types import AddonPreferences
-from bpy.props import BoolProperty
-import subprocess
-import sys
-import os
 
 # Get the addon's directory and deps path
 ADDON_DIR = os.path.dirname(os.path.realpath(__file__))
