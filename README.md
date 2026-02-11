@@ -1,3 +1,5 @@
+[![Lint](https://github.com/FabianPlum/BlenderJPS/actions/workflows/lint.yml/badge.svg)](https://github.com/FabianPlum/BlenderJPS/actions/workflows/lint.yml)
+
 # BlenderJPS - JuPedSim Trajectory Importer for Blender
 
 A Blender addon for importing JuPedSim simulation SQLite files, visualizing agent trajectories and simulation geometry.
