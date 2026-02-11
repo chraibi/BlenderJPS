@@ -25,17 +25,17 @@ A Blender addon for importing JuPedSim simulation SQLite files, visualizing agen
 ## Installation
 
 1. **Download the latest release** from [GitHub Releases](https://github.com/FabianPlum/BlenderJPS/releases)
-2. **Open Blender in Administrator mode** (required for dependency installation)
-   - **Windows**: Right-click Blender → "Run as administrator"
-   - **macOS**: `sudo /Applications/Blender.app/Contents/MacOS/Blender`
-   - **Linux**: `sudo blender`
+2. **Open Blender as your normal user** (do not run as Administrator/root for installation)
 3. Go to **Edit → Preferences → Add-ons**
 4. Click **Install...** and select the downloaded ZIP file
 5. Enable the addon by checking the box next to "BlenderJPS - JuPedSim Importer"
-6. Expand the addon settings and click **Install Dependencies** (this installs `pedpy` and `numpy<2.0`)
-7. **Restart Blender** (normal mode, no admin needed)
+6. **(Recommended)** If you started Blender without a terminal (e.g. on Windows by double‑clicking the icon), open **Window → Toggle System Console** before the next step. You can then see pip’s progress while dependencies install; Blender may look unresponsive for one or two minutes.
+7. Expand the addon settings and click **Install Dependencies** (this installs `pedpy` and `numpy<2.0` into the addon folder)
+8. **Restart Blender**
 
 The **JuPedSim** panel will appear in the right sidebar of the 3D Viewport (press `N` if the sidebar is hidden).
+
+> **Important:** Run Blender as the same user you use every day. If you install the addon or dependencies while Blender is run as Administrator/root, they are installed in that account’s Blender config. When you then start Blender as a normal user, the addon may not appear, or pedpy may not be found. Always install and use Blender as your normal user.
 
 ## Usage
 
@@ -81,9 +81,13 @@ The addon uses [PedPy](https://github.com/PedestrianDynamics/PedPy) (mainly for 
 
 ## Troubleshooting
 
+### Addon does not appear / pedpy not found after restart (macOS/Linux/Windows)
+- **Do not run Blender as Administrator or root** for normal use or when installing the addon/dependencies. If you previously installed while running Blender as root (e.g. `sudo Blender` on macOS), the addon and pedpy were installed in root’s Blender config. A normal user session then uses a different config, so the addon may not show or pedpy may be “not found.”
+- **Fix:** Run Blender as your normal user. Remove the addon from **Edit → Preferences → Add-ons** if it was installed as root. Install the addon again (Install... → enable) and click **Install Dependencies** while Blender is running as your normal user. Restart Blender as normal user. Dependencies are installed into the addon folder, so no admin rights are needed.
+
 ### "Dependencies not installed" error
-- Make sure you ran Blender as Administrator when installing dependencies
-- Check the Blender console (Window → Toggle System Console on Windows) for error messages
+- Install dependencies from **Edit → Preferences → Add-ons** → BlenderJPS → **Install Dependencies**. No Administrator/root required.
+- Check the Blender console (Window → Toggle System Console on Windows; or run Blender from Terminal on macOS/Linux) for error messages
 - Try reinstalling dependencies from the addon preferences
 
 ### "File not found" error

@@ -8,6 +8,7 @@ __pycache__/
 *.blend
 *.blend1
 *.blend2
+blender_jps/modules/
 
 # IDE
 .idea/
