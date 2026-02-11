@@ -1,9 +1,9 @@
 import argparse
 import os
-import sys
-import traceback
-import tempfile
 import sqlite3
+import sys
+import tempfile
+import traceback
 
 import addon_utils
 import bpy
