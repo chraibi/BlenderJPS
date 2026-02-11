@@ -89,12 +89,11 @@ def _stream_frame_handler(scene):
 
 def check_dependencies():
     """Check if required dependencies are installed."""
-    try:
-        import shapely
+    import importlib.util
 
-        return True, None
-    except ImportError as e:
-        return False, str(e)
+    if importlib.util.find_spec("shapely") is None:
+        return False, "shapely not found"
+    return True, None
 
 
 class JUPEDSIM_OT_select_file(Operator, ImportHelper):

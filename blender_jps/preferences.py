@@ -23,13 +23,10 @@ def ensure_deps_in_path():
 
 def is_pedpy_installed():
     """Check if pedpy is installed and importable."""
-    ensure_deps_in_path()
-    try:
-        import pedpy
+    import importlib.util
 
-        return True
-    except ImportError:
-        return False
+    ensure_deps_in_path()
+    return importlib.util.find_spec("pedpy") is not None
 
 
 def dependencies_installed():
@@ -172,7 +169,7 @@ class JuPedSimAddonPreferences(AddonPreferences):
                 version = getattr(pedpy, "__version__", "unknown")
                 row = box.row()
                 row.label(text=f"Version: {version}")
-            except:
+            except (ImportError, AttributeError):
                 pass
 
             box.separator()

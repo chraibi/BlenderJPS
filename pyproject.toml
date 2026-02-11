@@ -15,6 +15,9 @@ ignore = [
     "E501",   # line too long (handled by formatter)
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402"]  # Allow imports after ensure_deps_in_path()
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
