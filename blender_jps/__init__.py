@@ -15,9 +15,10 @@ bl_info = {
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > JuPedSim",
     "description": "Import JuPedSim trajectory SQLite files with agent animations and geometry",
-    "warning": "Requires external Python packages (pedpy). See documentation for installation.",
-    "doc_url": "",
+    "doc_url": "https://github.com/FabianPlum/BlenderJPS",
+    "tracker_url": "https://github.com/FabianPlum/BlenderJPS/issues",
     "category": "Import-Export",
+    "support": "COMMUNITY",
 }
 
 import bpy
