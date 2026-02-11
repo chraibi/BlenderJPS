@@ -11,7 +11,7 @@ ensure_deps_in_path()
 bl_info = {
     "name": "BlenderJPS - JuPedSim Importer",
     "author": "Fabian Plum",
-    "version": (0, 1, 0),
+    "version": (0, 1, 1),
     "blender": (4, 0, 0),
     "location": "View3D > Sidebar > JuPedSim",
     "description": "Import JuPedSim trajectory SQLite files with agent animations and geometry",

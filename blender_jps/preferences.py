@@ -78,17 +78,14 @@ class JUPEDSIM_OT_install_dependencies(bpy.types.Operator):
             self.report({"INFO"}, f"Installing pedpy to {DEPS_DIR}...")
             subprocess.check_call(
                 [
-                    py_exec,
-                    "-m",
-                    "pip",
-                    "install",
-                    "--target",
-                    DEPS_DIR,
+                    py_exec, "-m", "pip", "install",
+                    "--target", _MODULES_DIR,
                     "--upgrade",
-                    "--no-user",  # Don't use user site-packages
+                    "--no-user",
                     "pedpy",
                     "numpy<2.0",
-                ]
+                ],
+                timeout=300,
             )
 
             # Add to path immediately so it works without restart
