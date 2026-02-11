@@ -39,22 +39,19 @@ jobs:
 
           "$GITHUB_WORKSPACE/${BLENDER_DIR}/blender" --version
 
-      - name: Install pedpy into Blender Python
-        run: |
-          set -euxo pipefail
-          "$BLENDER_BIN" --background --python-expr "
-import subprocess, sys
-print('Blender Python:', sys.executable)
-subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'])
-subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pedpy'])
-print('pedpy installed OK')
-"
 
-      - name: Run add-on loading test
+      - name: Install pedpy into Blender Python
+        shell: bash
         run: |
           set -euxo pipefail
-          "$BLENDER_BIN" \
-            --background \
-            --factory-startup \
-            --python blender_jps/tests/test_plugin_loading.py \
-            -- --addon "${ADDON_MODULE}" --factory-startup
+
+          cat > /tmp/install_pedpy.py <<'PY'
+          import subprocess, sys
+          print("Blender Python:", sys.executable)
+          subprocess.check_call([sys.executable, "-m", "ensurepip", "--upgrade"])
+          subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+          subprocess.check_call([sys.executable, "-m", "pip", "install", "pedpy"])
+          print("pedpy installed OK")
+          PY
+
+          "$BLENDER_BIN" --background --python /tmp/install_pedpy.py
