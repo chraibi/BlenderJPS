@@ -161,6 +161,116 @@ def _test_sqlite_loading(addon_name):
             print(f"✓ Cleaned up test file: {db_path}")
 
 
+def _validate_sqlite_schema(db_path, min_agents=1, min_frames=1):
+    """
+    Validate that a SQLite file has the expected JuPedSim schema and data.
+
+    Args:
+        db_path: Path to the SQLite file
+        min_agents: Minimum number of unique agents expected
+        min_frames: Minimum number of frames expected
+
+    Returns:
+        tuple: (agent_count, frame_count, has_geometry)
+    """
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT name FROM sqlite_master 
+        WHERE type='table' AND name='trajectory_data'
+    """)
+    if not cursor.fetchone():
+        raise RuntimeError("Missing 'trajectory_data' table")
+    print("✓ Found 'trajectory_data' table")
+
+    cursor.execute("PRAGMA table_info(trajectory_data)")
+    columns = {row[1] for row in cursor.fetchall()}
+    required_cols = {"id", "frame", "pos_x", "pos_y"}
+    if not required_cols.issubset(columns):
+        missing = required_cols - columns
+        raise RuntimeError(f"Missing required columns in trajectory_data: {missing}")
+    print(f"✓ trajectory_data has required columns: {required_cols}")
+
+    cursor.execute("SELECT COUNT(*) FROM trajectory_data")
+    total_records = cursor.fetchone()[0]
+    print(f"✓ Found {total_records} trajectory records")
+
+    cursor.execute("SELECT COUNT(DISTINCT id) FROM trajectory_data")
+    agent_count = cursor.fetchone()[0]
+    print(f"✓ Found {agent_count} unique agents")
+
+    cursor.execute("SELECT COUNT(DISTINCT frame) FROM trajectory_data")
+    frame_count = cursor.fetchone()[0]
+    print(f"✓ Found {frame_count} unique frames")
+
+    cursor.execute("SELECT MIN(frame), MAX(frame) FROM trajectory_data")
+    min_frame, max_frame = cursor.fetchone()
+    print(f"✓ Frame range: {min_frame} to {max_frame}")
+
+    cursor.execute("""
+        SELECT name FROM sqlite_master 
+        WHERE type='table' AND name='geometry'
+    """)
+    has_geometry = cursor.fetchone() is not None
+    if has_geometry:
+        cursor.execute("SELECT COUNT(*) FROM geometry")
+        geom_count = cursor.fetchone()[0]
+        print(f"✓ Found geometry table with {geom_count} records")
+    else:
+        print("ℹ No geometry table found (optional)")
+
+    conn.close()
+
+    if agent_count < min_agents:
+        raise RuntimeError(f"Expected at least {min_agents} agents, found {agent_count}")
+    if frame_count < min_frames:
+        raise RuntimeError(f"Expected at least {min_frames} frames, found {frame_count}")
+
+    return agent_count, frame_count, has_geometry
+
+
+def _test_example_file(addon_name, repo_root):
+    """Test loading the prepackaged examples/trajectories.sqlite file."""
+    print("\n" + "=" * 72)
+    print("Testing Prepackaged Example File (examples/trajectories.sqlite)")
+    print("=" * 72 + "\n")
+
+    example_path = os.path.join(repo_root, "examples", "trajectories.sqlite")
+
+    if not os.path.exists(example_path):
+        raise RuntimeError(f"Example file not found: {example_path}")
+    print(f"✓ Found example file: {example_path}")
+
+    file_size = os.path.getsize(example_path)
+    print(f"✓ File size: {file_size:,} bytes ({file_size / 1024:.1f} KB)")
+
+    agent_count, frame_count, has_geometry = _validate_sqlite_schema(
+        example_path,
+        min_agents=1,
+        min_frames=1,
+    )
+
+    bpy.context.scene.jupedsim_props.sqlite_file = example_path
+    print("✓ Set sqlite_file property to example file")
+
+    conn = sqlite3.connect(example_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, frame, pos_x, pos_y FROM trajectory_data LIMIT 5")
+    sample_data = cursor.fetchall()
+    print("✓ Sample data (first 5 records):")
+    for row in sample_data:
+        print(f"  Agent {row[0]}, Frame {row[1]}: ({row[2]:.2f}, {row[3]:.2f})")
+
+    conn.close()
+
+    print("\n✓ Example file validation passed!")
+    print(f"  - {agent_count} agents")
+    print(f"  - {frame_count} frames")
+    print(f"  - Geometry: {'Yes' if has_geometry else 'No'}")
+
+
 def main():
     args = _parse_args()
 
