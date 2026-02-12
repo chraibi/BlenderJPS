@@ -91,6 +91,7 @@ jobs:
             --require-module shapely \
             --require-operator jupedsim.load_simulation \
             --require-operator jupedsim.select_file \
+            --test-dependency-installation \
             --test-sqlite-loading \
             --test-example-file
 

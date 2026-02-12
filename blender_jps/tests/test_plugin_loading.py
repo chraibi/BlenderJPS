@@ -59,6 +59,11 @@ def _parse_args():
         action="store_true",
         help="Test loading the prepackaged examples/trajectories.sqlite file",
     )
+    p.add_argument(
+        "--test-dependency-installation",
+        action="store_true",
+        help="Test the addon's dependency installation system",
+    )
     return p.parse_args(_script_args())
 
 
@@ -276,6 +281,62 @@ def _test_example_file(addon_name, repo_root):
     print(f"  - Geometry: {'Yes' if has_geometry else 'No'}")
 
 
+def _test_dependency_installation(addon_name, repo_root):
+    """Test the addon's dependency installation operator."""
+    print("\n" + "=" * 72)
+    print("Testing Dependency Installation System")
+    print("=" * 72 + "\n")
+
+    if not _operator_exists("jupedsim.install_dependencies"):
+        raise RuntimeError("Operator 'jupedsim.install_dependencies' not found")
+    print("✓ Operator 'jupedsim.install_dependencies' exists")
+
+    if not _operator_exists("jupedsim.uninstall_dependencies"):
+        raise RuntimeError("Operator 'jupedsim.uninstall_dependencies' not found")
+    print("✓ Operator 'jupedsim.uninstall_dependencies' exists")
+
+    addon_dir = os.path.join(repo_root, "blender_jps")
+    deps_dir = os.path.join(addon_dir, "deps")
+
+    if not os.path.exists(deps_dir):
+        raise RuntimeError(f"deps directory not found: {deps_dir}")
+    print(f"✓ deps directory exists: {deps_dir}")
+
+    deps_contents = os.listdir(deps_dir)
+    print(f"✓ deps directory contains {len(deps_contents)} items")
+
+    pedpy_dir = os.path.join(deps_dir, "pedpy")
+    if not os.path.isdir(pedpy_dir):
+        raise RuntimeError(f"pedpy package directory not found: {pedpy_dir}")
+    print(f"✓ pedpy package directory exists: {pedpy_dir}")
+
+    if deps_dir not in sys.path:
+        sys.path.insert(0, deps_dir)
+
+    import importlib.util
+
+    if importlib.util.find_spec("pedpy") is None:
+        raise RuntimeError("pedpy not importable from deps.")
+    else:
+        import pedpy
+
+        print(f"✓ pedpy importable from deps (version: {pedpy.__version__})")
+
+    if importlib.util.find_spec("shapely") is None:
+        raise RuntimeError("shapely not importable.")
+    else:
+        print("✓ shapely importable (pedpy dependency)")
+
+    # Test the preferences class exists
+    try:
+        _ = bpy.context.preferences.addons[addon_name].preferences
+        print("✓ Addon preferences accessible")
+    except (KeyError, AttributeError) as e:
+        raise RuntimeError(f"Cannot access addon preferences: {e}") from e
+
+    print("\n✓ Dependency installation system test passed!")
+
+
 def main():
     args = _parse_args()
 
@@ -312,6 +373,9 @@ def main():
             if not _operator_exists(op_id):
                 raise RuntimeError(f"Required operator not found: {op_id}")
             print(f"✓ Required operator exists: {op_id}")
+
+        if args.test_dependency_installation:
+            _test_dependency_installation(args.addon, repo_root)
 
         if args.test_sqlite_loading:
             _test_sqlite_loading(args.addon)
