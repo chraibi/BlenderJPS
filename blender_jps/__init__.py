@@ -1,7 +1,8 @@
-"""
-BlenderJPS - JuPedSim Trajectory Importer for Blender
+"""BlenderJPS - JuPedSim Trajectory Importer for Blender.
+
 A Blender addon for importing JuPedSim simulation SQLite files.
 """
+
 import os
 
 from . import install_utils
