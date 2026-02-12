@@ -7,14 +7,6 @@ on:
 jobs:
   addon-smoke-test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        blender_version: 
-          - version: "5.0.1"
-            major_dir: "Blender5.0"
-          - version: "4.2.0"
-            major_dir: "Blender4.2"
     
     env:
       ADDON_MODULE: "blender_jps"
